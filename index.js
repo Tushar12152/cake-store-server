@@ -36,6 +36,52 @@ async function run() {
 
     const userCollection = client.db("CakeStoreDb").collection("users");
     const cakesCollection = client.db("CakeStoreDb").collection("cakes");
+    const ordersCollection = client.db("CakeStoreDb").collection("orders");
+
+
+    //ordersCollection
+
+    app.post ('/orders',async(req,res)=>{
+         const order=req.body;
+         const result= await ordersCollection.insertOne(order)
+         res.send(result)
+    })
+
+    app.get('/orders',async(req,res)=>{
+      
+         const  result=await ordersCollection.find().toArray()
+         res.send(result)
+    })
+
+    
+     app.delete('/orders/:id',async(req,res)=>{
+            const id=req.params.id;
+            const result=await ordersCollection.deleteOne({_id:new ObjectId(id)})
+            res.send(result)
+     })
+
+
+     app.patch('/orders/:id',async (req,res)=>{
+             const id=req.params.id;
+             const confirm=req.body;
+             console.log(id,confirm)
+
+             const filter={_id:new ObjectId(id)}
+             const options = { upsert: true }
+
+             const updatedDoc={
+                $set:{
+                    status:confirm?.status
+                }
+             }
+
+             const result=await ordersCollection.updateOne(filter,updatedDoc,options)
+             res.send(result)
+
+     })
+
+
+
 
 //cakes collection
 
@@ -58,7 +104,11 @@ app.delete('/cakes/:id',async(req,res)=>{
     // console.log(id);
 })
 
-
+app.get('/cakes/:id',async(req,res)=>{
+     const id=req.params.id;
+     const result=await cakesCollection.findOne({_id:new ObjectId(id)})
+     res.send(result)
+})
 
 
 
@@ -104,9 +154,9 @@ app.delete('/cakes/:id',async(req,res)=>{
 
 
 
-    // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+//     // Send a ping to confirm a successful connection
+//     await client.db("admin").command({ ping: 1 });
+//     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
